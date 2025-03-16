@@ -1,18 +1,17 @@
 # The Head First Go网站
 https://headfirstgo.com
 
-
 # A Tour of Go
-https://tour.golang.org
+https://go.dev/tour/
 
 # Effective Go
-https://golang.org/doc/effective_go.html
+https://go.dev/doc/effective_go
 
 # The Go Blog
-https://blog.golang.org
+https://go.dev/blog/
 
 # 包的文档
-https://golang.org/pkg/
+https://pkg.go.dev/std
 
 # The Go Programming Language
 https://www.gopl.io/
