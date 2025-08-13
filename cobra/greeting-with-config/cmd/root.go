@@ -15,7 +15,11 @@ var rootCmd = &cobra.Command{
 	Short: "根据配置文件打招呼",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		person := NewPerson()
+		person.DumpConfig()
+		greeting(person.Name, person.Age)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
