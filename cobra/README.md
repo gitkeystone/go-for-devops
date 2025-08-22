@@ -23,6 +23,11 @@ go build -o my-cli
 # 参数
 ```bash
 go doc pflag.FlagSet
+
+
+# 交互式组件
+go get -u github.com/AlecAivazis/survey/v2
+
 ```
 
 # 其他
