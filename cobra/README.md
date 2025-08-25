@@ -9,15 +9,20 @@ go install github.com/spf13/cobra-cli@latest
 
 # 初始化
 # 必须先执行 `go mod init <MODNAME>`, 初始化一个GO模块，然后才能执行以下命令
-cobra-cli init
+cobra-cli init -a 'Chen Xiaohui'
 
 # 添加子命令
 cobra-cli add serve
+
+goimports -w . && gofmt 
+make build
 
 # 运行
 go build -o my-cli
 ./my-cli
 ./my-cli serve
+
+
 ```
 
 # 参数

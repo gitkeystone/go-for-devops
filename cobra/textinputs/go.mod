@@ -1,4 +1,4 @@
-module aliyun
+module textinputs
 
 go 1.24.1
 

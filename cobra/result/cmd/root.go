@@ -4,18 +4,34 @@ Copyright © 2025 Chen Xiaohui
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "aliyun",
-	Short: "阿里云",
+	Use:   "result",
+	Short: "单选",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		p := tea.NewProgram(result{})
+
+		// Run returns the model as a tea.Model.
+		m, err := p.Run()
+		if err != nil {
+			fmt.Println("Oh no:", err)
+			os.Exit(1)
+		}
+
+		// Assert the final tea.Model to our local model and print the choice.
+		if m, ok := m.(result); ok && m.choice != "" {
+			fmt.Printf("\n---\nYou chose %s!\n", m.choice)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -32,7 +48,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.aliyun.yaml)")
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.result.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
