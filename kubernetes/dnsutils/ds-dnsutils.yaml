@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dnsutils
+  namespace: default
+  labels:
+    app: dnsutils
+spec:
+  selector:
+    matchLabels:
+      app: dnsutils
+  template:
+    metadata:
+      labels:
+        app: dnsutils
+    spec:
+      containers:
+      - name: dnsutils
+        image: registry.k8s.io/e2e-test-images/agnhost:2.39
+        imagePullPolicy: IfNotPresent
+        # 为了防止容器执行完就退出，可以添加一个长期运行的命令
+        command: ["/bin/sh"]
+        args: ["-c", "sleep infinity"]
+      restartPolicy: Always
+
+      # 使用 nodeSelector 只在有 disktype=ssd 标签的节点上运行
+      #nodeSelector:
+      #  disktype: ssd
+
+      # 或者使用 affinity 进行更复杂的节点选择
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: kubernetes.io/arch
+      #           operator: In
+      #           values:
+      #           - amd64
+
+  updateStrategy:
+    type: RollingUpdate

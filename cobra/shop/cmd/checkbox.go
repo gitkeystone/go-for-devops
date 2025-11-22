@@ -5,59 +5,28 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "设计购物清单",
-	Run: func(cmd *cobra.Command, args []string) {
-		p := tea.NewProgram(initialModel())
-		if _, err := p.Run(); err != nil {
-			fmt.Printf("Alas, there's been an error: %v", err)
-			os.Exit(1)
-		}
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(listCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-// Custome
-
-type model struct {
+type checkbox struct {
 	choices  []string
 	cursor   int
 	selected map[int]struct{}
 }
 
-func initialModel() model {
-	return model{
+func initialModel() checkbox {
+	return checkbox{
 		choices:  []string{"Buy carrots", "Buy celery", "Buy kohlrabi"},
 		selected: make(map[int]struct{}),
 	}
 }
 
-func (m model) Init() tea.Cmd {
+func (m checkbox) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m checkbox) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -85,7 +54,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) View() string {
+func (m checkbox) View() string {
 	s := "What should we buy at the market?\n\n"
 	for i, choice := range m.choices {
 		cursor := " "

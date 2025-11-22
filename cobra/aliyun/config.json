@@ -1,0 +1,9 @@
+{
+    "id": "abc",
+    "key": "123456",
+    "region": "cn-hangzhou",
+    "language": [
+        "en",
+        "zh"
+    ]
+}

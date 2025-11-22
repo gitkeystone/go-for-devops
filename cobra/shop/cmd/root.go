@@ -4,18 +4,26 @@ Copyright © 2025 Chen Xiaohui
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "shop",
-	Short: "购物",
+	Short: "购物清单",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		p := tea.NewProgram(initialModel())
+		if _, err := p.Run(); err != nil {
+			fmt.Printf("Alas, there's been an error: %v", err)
+			os.Exit(1)
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
