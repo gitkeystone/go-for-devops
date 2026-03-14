@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"tempconv"
+	"weightconv"
 )
 
 func scanFromStdin() ([]string, error) {
@@ -33,28 +33,28 @@ func cfWithStdin() {
 			_, _ = fmt.Fprintf(os.Stderr, "cf: %v\n", err)
 			os.Exit(1)
 		}
-		f := tempconv.Fahrenheit(t)
-		c := tempconv.Celsius(t)
-
-		fmt.Printf("%s = %s, %s = %s\n", f, tempconv.FToC(f), c, tempconv.CToF(c))
+		p := weightconv.Pound(w)
+		k := weightconv.Kilogram(w)
+		fmt.Printf("%s = %s, %s = %s\n", p, weightconv.BToK(p), k, weightconv.KToB(k))
 	}
 
 }
 
 func cfWithArgs() {
 	for _, arg := range os.Args[1:] {
-		t, err := strconv.ParseFloat(arg, 64)
+		w, err := strconv.ParseFloat(arg, 64)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "cf: %v\n", err)
 			os.Exit(1)
 		}
-		f := tempconv.Fahrenheit(t)
-		c := tempconv.Celsius(t)
 
-		fmt.Printf("%s = %s, %s = %s\n", f, tempconv.FToC(f), c, tempconv.CToF(c))
+		p := weightconv.Pound(w)
+		k := weightconv.Kilogram(w)
+		fmt.Printf("%s = %s, %s = %s\n", p, weightconv.BToK(p), k, weightconv.KToB(k))
+
 	}
 }
 
 func main() {
-	cfWithStdin()
+	cfWithArgs()
 }
