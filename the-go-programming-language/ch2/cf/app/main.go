@@ -28,7 +28,7 @@ func cfWithStdin() {
 	}
 
 	for _, line := range input {
-		w, err := strconv.ParseFloat(line, 64)
+		t, err := strconv.ParseFloat(line, 64)
 		if err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "cf: %v\n", err)
 			os.Exit(1)
