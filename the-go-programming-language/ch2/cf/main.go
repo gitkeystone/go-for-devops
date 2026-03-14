@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strconv"
@@ -8,6 +9,20 @@ import (
 )
 
 func main() {
+	cfWithStdin()
+}
+
+func cfWithStdin() {
+	args := make([]string)
+
+	// 扫描器
+	input := bufio.NewScanner(os.Stdin)
+	for input.Scan() {
+		append(args, input.Text())
+	}
+}
+
+func cfWithArgs() {
 	for _, arg := range os.Args[1:] {
 		t, err := strconv.ParseFloat(arg, 64)
 		if err != nil {
