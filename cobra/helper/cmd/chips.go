@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	TableWidth      = 145
+	TableWidth      = 220
 	TableHeight     = 30
 	NamespacePrefix = "ns-"
 )
@@ -36,10 +36,36 @@ const (
 // 指定具体节点
 var nodeName string
 
-// 节点标签
+// 节点标签: 可根据指定标签过滤相应节点
 var selectors = []string{
 	"accelerator=huawei-Ascend910",
+	"ascend=on",
+	"volcano_ascend=on",
 	"gpu=true",
+	"gpu=on",
+	"volcano=on",
+}
+
+// Pod的请求资源列表
+var ChipResourceList = []string{
+	"cpu",
+	"memory",
+	"huawei.com/Ascend910",
+	"huawei.com/Ascend910B2",
+	"nvidia.com/gpu",
+	"huawei.com/Ascend910B2-memory",
+}
+
+// 芯片类型
+var ChipType = []string{
+	"huawei.com/Ascend910",
+	"huawei.com/Ascend910B2",
+	"nvidia.com/gpu",
+}
+
+// 显存
+var ChipMemory = []string{
+	"huawei.com/Ascend910B2-memory",
 }
 
 // chipsCmd represents the chips command
@@ -75,10 +101,13 @@ var chipsCmd = &cobra.Command{
 			{Title: "Hostname", Width: 25},
 			{Title: "IP", Width: 15},
 			{Title: "Namespace", Width: 10},
-			{Title: "Pod", Width: 40},
+			{Title: "Pod", Width: 60},
 			{Title: "Status", Width: 10},
-			{Title: "Chip", Width: 25},
-			{Title: "Quantity", Width: 10},
+			{Title: "Cpu", Width: 5},
+			{Title: "Mem(B)", Width: 15},
+			{Title: "Chip-Type", Width: 30},
+			{Title: "Chip-Quantity", Width: 15},
+			{Title: "Chip-Mem(MB)", Width: 15},
 		}
 
 		// 所有节点
@@ -95,7 +124,6 @@ var chipsCmd = &cobra.Command{
 			allNodes = append(allNodes, nodes...)
 		}
 
-		fmt.Println(len(allNodes))
 		// 所有行
 		rows := make([]table.Row, 0, 10)
 
@@ -112,26 +140,42 @@ var chipsCmd = &cobra.Command{
 
 			// 对于没有相关pod的节点
 			if len(node.Pods) == 0 {
-				row := table.Row{node.Hostname, node.IP, "", "", "", "", ""}
+				row := table.Row{node.Hostname, node.IP, "", "", "", "", "", "", "", ""}
 				rows = append(rows, row)
 				continue
 			}
 
 			// 一行记录一个pod
 			for _, pod := range node.Pods {
-				row := table.Row{
-					"",
-					"",
-					pod.Namespace,
-					pod.Name,
-					pod.Status,
-					pod.ChipResourceName,
-					pod.GetChipQuantity(),
-				}
+				row := make(table.Row, 10)
+
 				if node.Hostname != oldNodeName {
 					row[0] = node.Hostname
 					row[1] = node.IP
 				}
+
+				row[2] = pod.Namespace
+				row[3] = pod.Name
+				row[4] = pod.Status
+				row[5] = pod.GetResourceQuantity("cpu")
+				row[6] = pod.GetResourceQuantity("memory")
+
+				for _, resourceName := range ChipType {
+					if quantity, ok := pod.ChipResources[resourceName]; !ok || quantity == 0 {
+						continue
+					}
+					row[7] = resourceName
+					row[8] = pod.GetResourceQuantity(resourceName)
+					break
+				}
+
+				for _, resourceName := range ChipMemory {
+					if quantity, ok := pod.ChipResources[resourceName]; !ok || quantity == 0 {
+						continue
+					}
+					row[9] = pod.GetResourceQuantity(resourceName)
+				}
+
 				oldNodeName = node.Hostname
 
 				rows = append(rows, row)
@@ -199,18 +243,26 @@ func (m model) View() string {
 }
 
 type Pod struct {
-	Namespace        string
-	Name             string
-	Status           string
-	ChipResourceName string
-	ChipQuantity     int64
+	Namespace     string
+	Name          string
+	Status        string
+	ChipResources map[string]int64
 }
 
-func (p *Pod) GetChipQuantity() string {
-	if p.ChipQuantity == 0 {
+func NewPod() *Pod {
+	return &Pod{
+		Namespace:     "",
+		Name:          "",
+		Status:        "",
+		ChipResources: make(map[string]int64),
+	}
+}
+
+func (p *Pod) GetResourceQuantity(resourceName string) string {
+	if p.ChipResources[resourceName] == 0 {
 		return ""
 	} else {
-		return strconv.FormatInt(p.ChipQuantity, 10)
+		return strconv.FormatInt(p.ChipResources[resourceName], 10)
 	}
 }
 
@@ -223,7 +275,12 @@ type Node struct {
 
 func (n *Node) SetChipsUsed() {
 	for _, p := range n.Pods {
-		n.ChipsUsed += p.ChipQuantity
+		for _, resourceName := range ChipResourceList {
+			if resourceName == "cpu" || resourceName == "memory" {
+				continue
+			}
+			n.ChipsUsed += p.ChipResources[resourceName]
+		}
 	}
 }
 
@@ -268,11 +325,6 @@ func GetNodesWithChips(clientset *kubernetes.Clientset, labelSelector string) ([
 	}
 
 	return nodes, nil
-}
-
-var ChipResourceList = []string{
-	"huawei.com/Ascend910",
-	"nvidia.com/gpu",
 }
 
 func GetChipPodByNode(clientset *kubernetes.Clientset, node corev1.Node) (*Node, error) {
@@ -334,7 +386,7 @@ func GetChipPodByNode(clientset *kubernetes.Clientset, node corev1.Node) (*Node,
 }
 
 func GetPodInfo(clientset *kubernetes.Clientset, pod corev1.Pod) (*Pod, error) {
-	podWithChip := new(Pod)
+	podWithChip := NewPod()
 
 	if !strings.HasPrefix(pod.Namespace, NamespacePrefix) {
 		return nil, nil
@@ -351,26 +403,20 @@ func GetPodInfo(clientset *kubernetes.Clientset, pod corev1.Pod) (*Pod, error) {
 
 	podWithChip.Status = string(podDetail.Status.Phase)
 
+	resources := podDetail.Spec.Containers[0].Resources.Limits
 	for _, chipResouceName := range ChipResourceList {
-		if podDetail.Spec.Containers[0].Resources.Limits == nil {
+
+		quantity, ok := resources[corev1.ResourceName(chipResouceName)]
+		if !ok {
 			continue
 		}
 
-		for resourceName, quantity := range podDetail.Spec.Containers[0].Resources.Limits {
-			if resourceName.String() != chipResouceName {
-				continue
-			}
-			podWithChip.ChipResourceName = resourceName.String()
-
-			// Convert Pod chips limit value to int64
-			chipQuantity, ok := quantity.AsInt64()
-			if !ok {
-				return nil, fmt.Errorf("带芯片的Pod的芯片数量无法转化成数值：%s\n", quantity.String())
-			}
-			podWithChip.ChipQuantity = chipQuantity
-
-			break
+		chipQuantity, ok := quantity.AsInt64()
+		if !ok {
+			continue
 		}
+
+		podWithChip.ChipResources[chipResouceName] = chipQuantity
 	}
 	return podWithChip, nil
 }
