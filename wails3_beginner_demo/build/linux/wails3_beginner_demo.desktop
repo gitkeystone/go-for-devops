@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=wails3_beginner_demo
+Exec=wails3_beginner_demo
+Icon=wails3_beginner_demo
+Categories=Development;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false
