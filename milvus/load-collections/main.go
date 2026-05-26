@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/levigross/grequests"
@@ -30,7 +31,7 @@ func main() {
 	// List collections
 	cs, err := ListCollections(clusterEndpoint, token)
 	if err != nil {
-		fmt.Println("Error occurred while listing collections:", err.Error())
+		log.Fatal(err)
 	}
 
 	// Load collections
@@ -57,6 +58,8 @@ func main() {
 			fmt.Println("Error occurred while loading collection:", err.Error())
 		}
 	}
+
+	// 统计结果
 	fmt.Printf("Milvus 集合加载状态统计:\n未加载: %d\n加载中: %d\n已加载: %d\n", collectionStateCount["LoadStateNotLoad"], collectionStateCount["LoadStateLoading"], collectionStateCount["LoadStateLoaded"])
 }
 
