@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/buger/jsonparser"
 	"github.com/levigross/grequests"
 )
 
@@ -21,18 +22,23 @@ func main() {
 	if !isURL(imageContent) {
 		imageContent, err = ImageToBase64Encode(imageContent)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("image conver to base64 failed: %s", err.Error())
 		}
 	}
 
-	resp, err := imageToText(apiUrl, imageContent)
+	jsonResp, err := imageToText(apiUrl, imageContent)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("request to paddle ocr server failed: %s", err.Error())
 	}
-	fmt.Println(resp)
+
+	text, err := jsonparser.GetString(jsonResp, "result", "layoutParsingResults", "[0]", "markdown", "text")
+	if err != nil {
+		log.Fatalf("cannot parse json field [.result.layoutParsingResults[0].markdown.text], cause: %s", err.Error())
+	}
+	fmt.Println(text)
 }
 
-func imageToText(apiUrl, imageContent string) (string, error) {
+func imageToText(apiUrl, imageContent string) ([]byte, error) {
 	// 请求选项
 	ro := &grequests.RequestOptions{
 		Headers: map[string]string{
@@ -48,14 +54,14 @@ func imageToText(apiUrl, imageContent string) (string, error) {
 	// POST 请求
 	resp, err := grequests.Post(apiUrl, grequests.FromRequestOptions(ro))
 	if err != nil {
-		return "", fmt.Errorf("unable to make request: %s", err.Error())
+		return nil, fmt.Errorf("unable to make request: %s", err.Error())
 	}
 	if !resp.Ok {
-		return "", fmt.Errorf("request did not return OK: %s", resp.String())
+		return nil, fmt.Errorf("request did not return OK: %s", resp.String())
 	}
 
 	// 响应结果
-	return resp.String(), nil
+	return resp.Bytes(), nil
 }
 
 func ImageToBase64Encode(imagePath string) (string, error) {
