@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"log"
-	"os"
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
@@ -18,10 +17,6 @@ var loadCmd = &cobra.Command{
 	Long: `When you load a collection, Milvus loads the index files and the raw data of all fields into memory for 
 rapid response to searches and queries. Entities inserted after a collection load are automatically indexed and loaded.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// Get ENV Variables
-		clusterEndpoint := os.Getenv("CLUSTER_ENDPOINT")
-		token := os.Getenv("TOKEN")
-
 		url := clusterEndpoint + "/v2/vectordb/collections/list"
 		ro := createRequestOptions(token, map[string]string{})
 
@@ -40,7 +35,7 @@ rapid response to searches and queries. Entities inserted after a collection loa
 
 		collectionList := collections.Data
 		counts := len(collectionList)
-		bar := progressbar.Default(int64(counts))
+		bar := progressbar.Default(int64(counts), "Loading")
 		for i := 0; i < counts; i++ {
 			// 未加载: LoadStateNotLoad
 			// 加载中: LoadStateLoading

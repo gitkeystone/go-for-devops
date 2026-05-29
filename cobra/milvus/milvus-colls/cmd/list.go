@@ -6,7 +6,6 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
@@ -18,10 +17,6 @@ var listCmd = &cobra.Command{
 	Short: "List Collections",
 	Long:  `This command demonstrates how to obtain the name list of all collections in the currently connected database.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// Get ENV Variables
-		clusterEndpoint := os.Getenv("CLUSTER_ENDPOINT")
-		token := os.Getenv("TOKEN")
-
 		url := clusterEndpoint + "/v2/vectordb/collections/list"
 		ro := createRequestOptions(token, map[string]string{})
 
@@ -41,7 +36,7 @@ var listCmd = &cobra.Command{
 
 		collectionNames := collections.Data
 		counts := len(collectionNames)
-		bar := progressbar.Default(int64(counts))
+		bar := progressbar.Default(int64(counts), "Listing")
 		for i := 0; i < counts; i++ {
 			// 未加载: LoadStateNotLoad
 			// 加载中: LoadStateLoading

@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"log"
-	"os"
 
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
@@ -18,10 +17,6 @@ var releaseCmd = &cobra.Command{
 	Long: `Searches and queries are memory-intensive operations. 
 To save the cost, you are advised to release the collections that are currently not in use.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// Get ENV Variables
-		clusterEndpoint := os.Getenv("CLUSTER_ENDPOINT")
-		token := os.Getenv("TOKEN")
-
 		url := clusterEndpoint + "/v2/vectordb/collections/list"
 		ro := createRequestOptions(token, map[string]string{})
 
@@ -39,7 +34,7 @@ To save the cost, you are advised to release the collections that are currently 
 		// Load collections
 		collectionList := collections.Data
 		counts := len(collectionList)
-		bar := progressbar.Default(int64(counts))
+		bar := progressbar.Default(int64(counts), "Releasing")
 		for i := 0; i < counts; i++ {
 			// 未加载: LoadStateNotLoad
 			// 加载中: LoadStateLoading

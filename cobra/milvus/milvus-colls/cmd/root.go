@@ -4,10 +4,14 @@ Copyright © 2026 Chen Xiaohui
 package cmd
 
 import (
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 )
+
+var clusterEndpoint = os.Getenv("CLUSTER_ENDPOINT")
+var token = os.Getenv("TOKEN")
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -39,4 +43,8 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	if clusterEndpoint == "" || token == "" {
+		log.Fatalf("\nPlease Set Env: \n\texport CLUSTER_ENDPOINT=\"http://18.1.27.42:19530\"\n\texport TOKEN=\"root:RFA9aYomWKFlzDAP_8lQ\"")
+	}
 }
